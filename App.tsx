@@ -49,10 +49,15 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedPlayers = localStorage.getItem('padel_players');
     const savedTournament = localStorage.getItem('padel_tournament');
+    const savedCourtNames = localStorage.getItem('padel_court_names');
     if (savedPlayers) setPlayers(JSON.parse(savedPlayers));
+    if (savedCourtNames) setCourtNames(JSON.parse(savedCourtNames));
     if (savedTournament) {
       try {
-        setTournament(JSON.parse(savedTournament));
+        const parsed = JSON.parse(savedTournament);
+        setTournament(parsed);
+        // Restore court names from tournament if available
+        if (parsed.courtNames) setCourtNames(parsed.courtNames);
         setActiveTab('rounds');
       } catch (e) {
         console.error("Failed to load tournament", e);
@@ -67,6 +72,12 @@ const App: React.FC = () => {
   useEffect(() => {
     if (tournament) localStorage.setItem('padel_tournament', JSON.stringify(tournament));
   }, [tournament]);
+
+  useEffect(() => {
+    if (courtNames.length > 0) {
+      localStorage.setItem('padel_court_names', JSON.stringify(courtNames));
+    }
+  }, [courtNames]);
 
   const addPlayer = () => {
     if (!newPlayerName.trim()) return;
@@ -122,6 +133,7 @@ const App: React.FC = () => {
       setCourtNames([]);
       localStorage.removeItem('padel_tournament');
       localStorage.removeItem('padel_players');
+      localStorage.removeItem('padel_court_names');
       setActiveTab('setup');
     }
   };
