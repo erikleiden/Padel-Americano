@@ -417,20 +417,6 @@ const App: React.FC = () => {
                     </button>
                   )}
                 </div>
-                {(() => {
-                  const matches = tournament.rounds[currentRoundIndex]?.matches || [];
-                  const completed = matches.filter(m => m.isCompleted).length;
-                  const total = matches.length;
-                  return (
-                    <div className="mt-2 text-[10px] md:text-xs font-bold text-slate-400">
-                      {completed === total ? (
-                        <span className="text-emerald-500">✓ All matches complete</span>
-                      ) : (
-                        <span>{completed}/{total} matches complete</span>
-                      )}
-                    </div>
-                  );
-                })()}
               </div>
               <button disabled={currentRoundIndex === tournament.rounds.length - 1} onClick={() => setCurrentRoundIndex(i => i + 1)} className="p-3 md:p-6 rounded-xl md:rounded-[2rem] text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:opacity-0"><ChevronRight className="w-8 h-8 md:w-12 md:h-12" strokeWidth={3} /></button>
             </div>
