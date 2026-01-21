@@ -115,6 +115,17 @@ const App: React.FC = () => {
     }
   };
 
+  const clearAllData = () => {
+    if (window.confirm("Clear ALL data? This will remove all players and tournament data.")) {
+      setTournament(null);
+      setPlayers([]);
+      setCourtNames([]);
+      localStorage.removeItem('padel_tournament');
+      localStorage.removeItem('padel_players');
+      setActiveTab('setup');
+    }
+  };
+
   const updateScore = (roundIdx: number, matchId: string, team: 'A' | 'B', score: string) => {
     if (!tournament) return;
     const val = score === '' ? null : Math.max(0, parseInt(score) || 0);
@@ -274,6 +285,11 @@ const App: React.FC = () => {
               <div className="space-y-4">
                 <button onClick={startTournament} disabled={players.length < 4} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 text-white py-5 md:py-6 rounded-2xl md:rounded-[2rem] font-black text-lg md:text-xl flex items-center justify-center gap-3 transition-all active:scale-95"><Play className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" /> GENERATE</button>
                 {tournament && <button onClick={resetTournament} className="w-full text-slate-500 font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 py-2"><Trash className="w-3 h-3" /> End Session</button>}
+                {(players.length > 0 || tournament) && (
+                  <button onClick={clearAllData} className="w-full text-rose-400 hover:text-rose-300 font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 py-2 transition-colors">
+                    <Trash2 className="w-3 h-3" /> Clear All Data
+                  </button>
+                )}
               </div>
             </div>
           </div>
