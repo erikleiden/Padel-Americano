@@ -18,7 +18,7 @@
 |------|---------|
 | `App.tsx` | Main React component - UI, state management, scoring |
 | `types.ts` | TypeScript interfaces (Player, Match, Round, Tournament, LeaderboardEntry) |
-| `utils/scheduler.ts` | **Core logic** - generates tournament schedules with court rotation |
+| `utils/scheduler.ts` | **Core logic** - tournament schedules, additional rounds, championship |
 | `index.tsx` | React entry point |
 | `index.html` | HTML shell with Tailwind CDN |
 
@@ -30,10 +30,15 @@ The scheduler implements "Whist Tournament" logic:
 1. **Perfect schedules** for 8, 12, 16 players (hardcoded, mathematically optimal)
 2. **Fallback** Berger Table rotation for other player counts
 
-**Court Rotation**: The `optimizeCourtAssignments()` function ensures players don't stay on the same court repeatedly. It:
+**Key Functions**:
+- `generateAmericanoSchedule()` - Creates initial tournament rounds
+- `generateAdditionalRound()` - Adds fair rounds on-demand (prioritizes players with fewer matches)
+- `generateChampionshipRound()` - Creates finals: 1st+3rd vs 2nd+4th
+
+**Court Rotation**: The `optimizeCourtAssignments()` function ensures players rotate courts:
 - Tracks player court history across rounds
-- Scores assignments by "staleness" (recent court = higher score)
-- Picks the permutation with lowest total staleness
+- Uses round parity to force alternation when statistics tie
+- Courts display in fixed order in UI (sorted by courtIndex)
 
 ### State Management
 
@@ -41,16 +46,25 @@ All state lives in `App.tsx` using React hooks:
 - `players` - Array of registered players
 - `tournament` - Active tournament data (rounds, scores, court names)
 - `courtNames` - Custom court labels
-- Persisted to `localStorage` under `padel_players` and `padel_tournament`
+- `currentRoundIndex` - Currently viewed round
 
-### Scoring
+**Persistence** (localStorage keys):
+- `padel_players` - Player list
+- `padel_tournament` - Full tournament state
+- `padel_court_names` - Court names (before tournament starts)
 
-Points accumulate per-player across all rounds. Current tiebreaker order:
-1. Total points
-2. Match wins
-3. Matches played
+### Scoring & Leaderboard
 
-**TODO**: Add "total game wins" as tiebreaker (sum of all individual game scores).
+Points accumulate per-player across all rounds. Tiebreaker order:
+1. Total points (higher better)
+2. Match wins (higher better)
+3. Point differential (points scored - points conceded)
+
+### Championship System
+
+- Championship match ID contains "championship" string (used for detection)
+- Finals: 1st+3rd place team vs 2nd+4th place team
+- Results show: Team champions, runner-up, and individual 1-4 rankings by total points
 
 ## Commands
 
@@ -65,18 +79,21 @@ npm run preview # Preview production build
 
 - Player counts of 8, 12, 16 are "perfect" and show a special badge
 - Odd player counts get "bye" rounds where someone sits out
-- Courts auto-number but can be renamed (e.g., "Center Court")
-- The app is mobile-first with responsive breakpoints
+- Courts auto-number but can be renamed (Tab between inputs)
+- Setup is locked once tournament starts (overlay + disabled inputs)
+- "+" button to add rounds only appears on the last round
+- Keyboard: Arrow keys navigate rounds (when not in input)
 
 ## Known Quirks
 
-- There's an Easter egg: player named "Pete" renders at 50% scale (see `PlayerName` component)
+- Easter egg: player named "Pete" renders at 50% scale (see `PlayerName` component)
 - The hardcoded schedules in `SCHEDULE_8` and `SCHEDULE_16` are verified optimal and should not be modified
-- Court optimization uses brute-force permutation (fine for ≤4 courts, may need optimization for more)
+- Court optimization uses brute-force permutation (fine for ≤4 courts)
+- Championship detection uses `match.id.includes('championship')`
 
 ## Future Enhancements
 
-- [ ] Tie-breaking by total game wins
 - [ ] Export/share tournament results
 - [ ] Multiple tournament history
 - [ ] Real-time sync between devices
+- [ ] Print-friendly bracket view
