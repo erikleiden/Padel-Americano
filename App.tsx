@@ -397,7 +397,14 @@ const App: React.FC = () => {
             <div className="bg-white rounded-[2rem] md:rounded-[4rem] shadow-sm border border-slate-200 p-6 md:p-10 flex items-center justify-between">
               <button disabled={currentRoundIndex === 0} onClick={() => setCurrentRoundIndex(i => i - 1)} className="p-3 md:p-6 rounded-xl md:rounded-[2rem] text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:opacity-0"><ChevronLeft className="w-8 h-8 md:w-12 md:h-12" strokeWidth={3} /></button>
               <div className="text-center">
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-slate-400 block mb-1">Round</span>
+                {/* Check if this is a championship round */}
+                {tournament.rounds[currentRoundIndex]?.matches.some(m => m.id.includes('championship')) ? (
+                  <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-4 py-1 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest inline-flex items-center gap-1 mb-2">
+                    <Trophy className="w-3 h-3 md:w-4 md:h-4" /> Championship Round
+                  </div>
+                ) : (
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-slate-400 block mb-1">Round</span>
+                )}
                 <div className="text-4xl md:text-7xl font-black text-slate-900 flex items-center justify-center gap-2">
                   {currentRoundIndex + 1}<span className="text-slate-300 text-base md:text-2xl font-bold">/ {tournament.rounds.length}</span>
                   {currentRoundIndex === tournament.rounds.length - 1 && (
@@ -439,8 +446,11 @@ const App: React.FC = () => {
                 const winnerInputClass = "!border-emerald-400 !bg-emerald-50 text-emerald-700";
                 return (
                   <div key={match.id} className="bg-white rounded-3xl md:rounded-[4rem] shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="bg-slate-50/50 px-6 md:px-12 py-3 md:py-5 border-b border-slate-100 flex justify-between items-center font-black text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest">
-                      <span>{getCourtName(match.courtIndex)}</span>
+                    <div className={`px-6 md:px-12 py-3 md:py-5 border-b flex justify-between items-center font-black text-[9px] md:text-[10px] uppercase tracking-widest ${match.id.includes('championship') ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 text-yellow-700' : 'bg-slate-50/50 border-slate-100 text-slate-400'}`}>
+                      <span className="flex items-center gap-2">
+                        {match.id.includes('championship') && <Trophy className="w-4 h-4 text-yellow-500" />}
+                        {match.id.includes('championship') ? 'Finals' : getCourtName(match.courtIndex)}
+                      </span>
                       {match.isCompleted && <span className="text-emerald-500 flex items-center gap-1"><ShieldCheck size={12}/> Done</span>}
                     </div>
                     <div className="p-6 md:p-14 flex flex-col md:grid md:grid-cols-7 items-center gap-6 md:gap-8">
