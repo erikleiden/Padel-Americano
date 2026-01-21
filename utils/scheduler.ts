@@ -1,5 +1,4 @@
-
-import { Player, Match, Round } from '../types';
+import { Player, Match, Round } from '../types.ts';
 
 /**
  * Mathematically Perfect Whist Tournament Logic
@@ -153,8 +152,6 @@ export const generateAmericanoSchedule = (players: Player[]): Round[] => {
     const numMatchesPossible = Math.floor(validPairs.length / 2);
     
     for (let m = 0; m < numMatchesPossible; m++) {
-      // We offset the pairings slightly to vary opponents round-over-round
-      // while keeping the partnership fixed.
       matches.push({
         id: `r${r}-c${m}`,
         roundIndex: r,

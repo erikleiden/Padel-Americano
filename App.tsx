@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { Player, Tournament, Round, LeaderboardEntry, Match } from './types';
-import { generateAmericanoSchedule } from './utils/scheduler';
+import { Player, Tournament, Round, LeaderboardEntry, Match } from './types.ts';
+import { generateAmericanoSchedule } from './utils/scheduler.ts';
 import { 
   Users, 
   Trophy, 
@@ -132,7 +131,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fcfdfe] pb-24 md:pb-6 md:pl-24 font-inter antialiased">
-      {/* Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-0 md:w-24 bg-white/90 backdrop-blur-md border-t md:border-t-0 md:border-r border-slate-200 z-50 flex md:flex-col justify-around md:justify-center items-center py-2 md:py-4 md:space-y-12">
         {[
           { tab: 'setup', icon: Settings, label: 'Setup' },
@@ -213,7 +211,6 @@ const App: React.FC = () => {
 
         {activeTab === 'rounds' && tournament && (
           <div className="space-y-6 md:space-y-10">
-            {/* Round Swiper */}
             <div className="bg-white rounded-[2rem] md:rounded-[4rem] shadow-sm border border-slate-200 p-6 md:p-10 flex items-center justify-between">
               <button disabled={currentRoundIndex === 0} onClick={() => setCurrentRoundIndex(i => i - 1)} className="p-3 md:p-6 rounded-xl md:rounded-[2rem] text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:opacity-0"><ChevronLeft className="w-8 h-8 md:w-12 md:h-12" strokeWidth={3} /></button>
               <div className="text-center">
@@ -222,7 +219,6 @@ const App: React.FC = () => {
               </div>
               <button disabled={currentRoundIndex === tournament.rounds.length - 1} onClick={() => setCurrentRoundIndex(i => i + 1)} className="p-3 md:p-6 rounded-xl md:rounded-[2rem] text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:opacity-0"><ChevronRight className="w-8 h-8 md:w-12 md:h-12" strokeWidth={3} /></button>
             </div>
-            {/* Match Cards */}
             <div className="grid gap-4 md:gap-8">
               {(tournament.rounds[currentRoundIndex]?.matches || []).map((match) => {
                 const getP = (id: string) => tournament.players.find(p => p.id === id)?.name || 'Unknown';
@@ -233,18 +229,15 @@ const App: React.FC = () => {
                       {match.isCompleted && <span className="text-emerald-500 flex items-center gap-1"><ShieldCheck size={12}/> Done</span>}
                     </div>
                     <div className="p-6 md:p-14 flex flex-col md:grid md:grid-cols-7 items-center gap-6 md:gap-8">
-                      {/* Team A */}
                       <div className="w-full md:col-span-2 text-center md:text-right space-y-1 min-w-0">
                         <PlayerName name={getP(match.teamA[0])} baseClass="text-xl md:text-3xl font-[900] text-slate-900 tracking-tight italic block" />
                         <PlayerName name={getP(match.teamA[1])} baseClass="text-xl md:text-3xl font-[900] text-slate-900 tracking-tight italic block" />
                       </div>
-                      {/* VS and Inputs */}
                       <div className="w-full md:col-span-3 flex items-center justify-center gap-4 md:gap-6">
                         <input type="number" value={match.scoreA ?? ''} onChange={(e) => updateScore(currentRoundIndex, match.id, 'A', e.target.value)} className="w-16 h-16 md:w-28 md:h-28 text-center text-3xl md:text-5xl font-black bg-slate-50 border-2 md:border-4 border-slate-100 rounded-2xl md:rounded-[2.5rem] focus:border-indigo-600 focus:bg-white transition-all outline-none" placeholder="0" />
                         <span className="text-slate-200 font-black italic text-sm md:text-xl shrink-0">VS</span>
                         <input type="number" value={match.scoreB ?? ''} onChange={(e) => updateScore(currentRoundIndex, match.id, 'B', e.target.value)} className="w-16 h-16 md:w-28 md:h-28 text-center text-3xl md:text-5xl font-black bg-slate-50 border-2 md:border-4 border-slate-100 rounded-2xl md:rounded-[2.5rem] focus:border-indigo-600 focus:bg-white transition-all outline-none" placeholder="0" />
                       </div>
-                      {/* Team B */}
                       <div className="w-full md:col-span-2 text-center md:text-left space-y-1 min-w-0">
                         <PlayerName name={getP(match.teamB[0])} baseClass="text-xl md:text-3xl font-[900] text-slate-900 tracking-tight italic block" />
                         <PlayerName name={getP(match.teamB[1])} baseClass="text-xl md:text-3xl font-[900] text-slate-900 tracking-tight italic block" />
@@ -254,7 +247,6 @@ const App: React.FC = () => {
                 );
               })}
             </div>
-            {/* Byes */}
             {tournament.rounds[currentRoundIndex]?.byes.length > 0 && (
               <div className="bg-amber-50/50 rounded-3xl p-6 md:p-10 border border-amber-100">
                 <h3 className="text-amber-700 font-black text-[10px] md:text-[12px] uppercase tracking-widest mb-4 md:mb-6 flex items-center gap-2"><Info className="w-4 h-4 md:w-5 md:h-5"/> Currently Resting</h3>
@@ -275,16 +267,16 @@ const App: React.FC = () => {
             <div className="bg-white rounded-3xl md:rounded-[4rem] shadow-sm border border-slate-200 overflow-hidden">
               <div className="px-6 md:px-12 py-6 md:py-8 border-b border-slate-100 flex items-center justify-between">
                 <h2 className="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2 md:gap-3"><Award className="w-6 h-6 md:w-7 md:h-7 text-yellow-500" /> Standings</h2>
-                <span className="hidden md:inline text-slate-400 text-xs font-black uppercase tracking-widest italic">Sorted by Pts</span>
+                <span className="hidden md:inline text-slate-400 text-xs font-black uppercase tracking-widest italic text-right">Sorted by Pts</span>
               </div>
-              <div className="overflow-x-auto overflow-y-hidden">
-                <table className="w-full text-left border-collapse">
+              <div className="overflow-x-auto overflow-y-hidden no-scrollbar">
+                <table className="w-full text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr className="bg-slate-50/30 text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
                       <th className="px-4 md:px-12 py-4 md:py-8">Rank</th>
                       <th className="px-4 md:px-12 py-4 md:py-8">Athlete</th>
-                      <th className="px-4 md:px-12 py-4 md:py-8 text-center">W-L</th>
-                      <th className="px-4 md:px-12 py-4 md:py-8 text-right text-indigo-600">Points</th>
+                      <th className="px-4 md:px-12 py-4 md:py-8 text-center">Record (W-L-T)</th>
+                      <th className="px-4 md:px-12 py-4 md:py-8 text-right text-indigo-600">Total Points</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -295,17 +287,21 @@ const App: React.FC = () => {
                             {idx+1}
                           </div>
                         </td>
-                        <td className="px-4 md:px-12 py-6 md:py-10 min-w-[150px]">
+                        <td className="px-4 md:px-12 py-6 md:py-10">
                           <PlayerName name={entry.playerName} baseClass="font-black text-slate-900 text-lg md:text-2xl italic uppercase block" />
-                          <div className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase mt-1">Avg {entry.avgPoints}</div>
+                          <div className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase mt-1">Avg {entry.avgPoints} / Match</div>
                         </td>
                         <td className="px-4 md:px-12 py-6 md:py-10 text-center whitespace-nowrap">
-                          <span className="text-emerald-500 font-black text-xs md:text-sm">{entry.wins}W</span>
-                          <span className="mx-1 text-slate-200">/</span>
-                          <span className="text-rose-400 font-black text-xs md:text-sm">{entry.losses}L</span>
+                          <div className="flex items-center justify-center gap-1 font-black text-xs md:text-base">
+                            <span className="text-emerald-500">{entry.wins}W</span>
+                            <span className="text-slate-200">-</span>
+                            <span className="text-rose-400">{entry.losses}L</span>
+                            <span className="text-slate-200">-</span>
+                            <span className="text-slate-400">{entry.ties}T</span>
+                          </div>
                         </td>
                         <td className="px-4 md:px-12 py-6 md:py-10 text-right">
-                          <span className="font-black text-3xl md:text-6xl tracking-tighter text-slate-900 italic">{entry.totalPoints}</span>
+                          <span className="font-black text-3xl md:text-6xl tracking-tighter text-slate-900 italic leading-none">{entry.totalPoints}</span>
                         </td>
                       </tr>
                     ))}
