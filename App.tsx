@@ -475,8 +475,73 @@ const App: React.FC = () => {
 
         {activeTab === 'leaderboard' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6">
-            {/* Championship Round Button */}
-            {leaderboard.length >= 4 && (
+            {/* Final Standings - shows after championship is complete */}
+            {(() => {
+              // Find championship round and check if it's complete
+              const championshipRound = tournament?.rounds.find(r => 
+                r.matches.some(m => m.id.includes('championship'))
+              );
+              const championshipMatch = championshipRound?.matches.find(m => m.id.includes('championship'));
+              
+              if (!championshipMatch?.isCompleted || championshipMatch.scoreA === null || championshipMatch.scoreB === null) {
+                return null;
+              }
+              
+              // Determine winners and losers
+              const teamAWon = championshipMatch.scoreA > championshipMatch.scoreB;
+              const winners = teamAWon ? championshipMatch.teamA : championshipMatch.teamB;
+              const losers = teamAWon ? championshipMatch.teamB : championshipMatch.teamA;
+              
+              // Get player details and sort within teams by total points
+              const getPlayerStats = (id: string) => leaderboard.find(e => e.playerId === id);
+              const winnersWithStats = winners.map(id => ({ id, stats: getPlayerStats(id) }))
+                .sort((a, b) => (b.stats?.totalPoints || 0) - (a.stats?.totalPoints || 0));
+              const losersWithStats = losers.map(id => ({ id, stats: getPlayerStats(id) }))
+                .sort((a, b) => (b.stats?.totalPoints || 0) - (a.stats?.totalPoints || 0));
+              
+              const finalRankings = [
+                { place: 1, ...winnersWithStats[0] },
+                { place: 2, ...winnersWithStats[1] },
+                { place: 3, ...losersWithStats[0] },
+                { place: 4, ...losersWithStats[1] },
+              ];
+              
+              const placeStyles = [
+                'bg-yellow-400 text-white', // 1st
+                'bg-slate-300 text-slate-700', // 2nd
+                'bg-orange-400 text-white', // 3rd
+                'bg-slate-200 text-slate-600', // 4th
+              ];
+              
+              const placeLabels = ['🥇', '🥈', '🥉', '4th'];
+              
+              return (
+                <div className="bg-gradient-to-r from-yellow-100 via-amber-50 to-yellow-100 rounded-3xl md:rounded-[3rem] p-6 md:p-8 border-2 border-yellow-300 shadow-lg">
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2 justify-center mb-6">
+                    <Trophy className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" /> Final Standings
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    {finalRankings.map((entry, idx) => (
+                      <div key={entry.id} className={`${placeStyles[idx]} rounded-2xl md:rounded-3xl p-4 md:p-6 text-center shadow-md`}>
+                        <div className="text-2xl md:text-4xl mb-2">{placeLabels[idx]}</div>
+                        <div className="font-black text-lg md:text-xl italic truncate">
+                          {tournament?.players.find(p => p.id === entry.id)?.name || 'Unknown'}
+                        </div>
+                        <div className="text-xs md:text-sm opacity-75 font-bold mt-1">
+                          {entry.stats?.totalPoints || 0} pts
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-center mt-4 text-sm text-slate-600 font-medium">
+                    Championship: {teamAWon ? championshipMatch.scoreA : championshipMatch.scoreB} - {teamAWon ? championshipMatch.scoreB : championshipMatch.scoreA}
+                  </div>
+                </div>
+              );
+            })()}
+            
+            {/* Championship Round Button - only show if no championship exists */}
+            {leaderboard.length >= 4 && !tournament?.rounds.some(r => r.matches.some(m => m.id.includes('championship'))) && (
               <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-3xl md:rounded-[3rem] p-6 md:p-8 border border-yellow-200 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-center md:text-left">
                   <h3 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-2 justify-center md:justify-start">
