@@ -57,6 +57,11 @@ const WHIST_SEEDS: Record<number, number[][]> = {
 /**
  * Optimize court assignments to maximize variety for each player.
  * Players should play on different courts as much as possible.
+ * 
+ * Strategy:
+ * 1. Calculate "staleness" - how recently each player was on each court
+ * 2. Find permutation that minimizes total staleness (avoids recent courts)
+ * 3. On ties, prefer permutations that maximize court changes from last round
  */
 const optimizeCourtAssignments = (
   matches: Match[],
@@ -64,19 +69,43 @@ const optimizeCourtAssignments = (
 ): Match[] => {
   if (matches.length <= 1) return matches;
 
-  // Get all player IDs in this round
   const getPlayersInMatch = (m: Match) => [...m.teamA, ...m.teamB];
   
-  // Calculate "staleness" score for a player on a court
-  // Higher score = player has been on this court more recently
+  /**
+   * Calculate staleness for a player on a specific court.
+   * Higher = worse (player was on this court more recently)
+   * 
+   * Uses weighted recency: most recent round counts most, older rounds decay
+   */
   const getCourtStaleness = (playerId: string, courtIdx: number): number => {
     const history = playerCourtHistory.get(playerId) || [];
-    const lastIndex = history.lastIndexOf(courtIdx);
-    if (lastIndex === -1) return 0; // Never played on this court - ideal!
-    return history.length - lastIndex; // More recent = higher staleness
+    if (history.length === 0) return 0;
+    
+    let staleness = 0;
+    for (let i = 0; i < history.length; i++) {
+      if (history[i] === courtIdx) {
+        // More recent rounds (higher i) = higher weight
+        // Last round: weight = history.length, first round: weight = 1
+        const recencyWeight = i + 1;
+        staleness += recencyWeight;
+      }
+    }
+    return staleness;
   };
 
-  // Calculate total staleness for all players in a match on a given court
+  /**
+   * Count how many players would change courts with this assignment
+   * (compared to their most recent court). Higher = better for variety.
+   */
+  const countCourtChanges = (match: Match, courtIdx: number): number => {
+    return getPlayersInMatch(match).reduce((changes, playerId) => {
+      const history = playerCourtHistory.get(playerId) || [];
+      if (history.length === 0) return changes;
+      const lastCourt = history[history.length - 1];
+      return changes + (lastCourt !== courtIdx ? 1 : 0);
+    }, 0);
+  };
+
   const getMatchCourtScore = (match: Match, courtIdx: number): number => {
     return getPlayersInMatch(match).reduce(
       (sum, playerId) => sum + getCourtStaleness(playerId, courtIdx),
@@ -84,11 +113,10 @@ const optimizeCourtAssignments = (
     );
   };
 
-  // Try all permutations for small numbers of courts, pick the one with lowest total staleness
   const numCourts = matches.length;
   const courtIndices = Array.from({ length: numCourts }, (_, i) => i);
   
-  // Generate all permutations of court indices
+  // Generate all permutations
   const permute = (arr: number[]): number[][] => {
     if (arr.length <= 1) return [arr];
     const result: number[][] = [];
@@ -104,14 +132,24 @@ const optimizeCourtAssignments = (
   const allPermutations = permute(courtIndices);
   let bestPermutation = courtIndices;
   let bestScore = Infinity;
+  let bestChanges = -1; // Tiebreaker: prefer more court changes
 
   for (const perm of allPermutations) {
     const score = matches.reduce(
       (sum, match, idx) => sum + getMatchCourtScore(match, perm[idx]),
       0
     );
-    if (score < bestScore) {
+    
+    // Count how many players would change courts with this permutation
+    const changes = matches.reduce(
+      (sum, match, idx) => sum + countCourtChanges(match, perm[idx]),
+      0
+    );
+    
+    // Primary: minimize staleness. Secondary: maximize court changes.
+    if (score < bestScore || (score === bestScore && changes > bestChanges)) {
       bestScore = score;
+      bestChanges = changes;
       bestPermutation = perm;
     }
   }
