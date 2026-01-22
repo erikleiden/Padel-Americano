@@ -27,6 +27,7 @@ export interface Tournament {
   players: Player[];
   rounds: Round[];
   isStarted: boolean;
+  courtNames?: string[]; // Custom court names (e.g., "Court A", "Center Court", etc.)
 }
 
 export interface LeaderboardEntry {
@@ -38,4 +39,5 @@ export interface LeaderboardEntry {
   wins: number;
   losses: number;
   ties: number;
+  pointDifferential: number; // Total points scored minus points conceded
 }
